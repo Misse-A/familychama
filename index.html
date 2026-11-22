@@ -4,7 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   
-  <!-- SEO & Social Link Preview Tags -->
   <title>Family Chama</title>
   <meta name="description" content="Family Chama Savings & Loan Platform. Track group contributions, loans, and financials securely.">
   <meta property="og:title" content="Family Chama">
@@ -54,7 +53,11 @@
     #app { display: none; }
     header { display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; background: var(--surface); position: sticky; top: 0; z-index: 90; }
     .header-left { display: flex; align-items: center; gap: 12px; }
-    .header-logo { height: 32px; width: auto; cursor: pointer; }
+    
+    /* White Backgrounds for Logos */
+    .header-logo { height: 36px; width: auto; cursor: pointer; background-color: white; border-radius: 8px; padding: 4px; }
+    .auth-logo { height: 70px; margin-bottom: 30px; background-color: white; border-radius: 12px; padding: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+    
     .header-title { font-weight: 800; font-size: 1.1rem; color: var(--primary); }
     .header-actions { display: flex; align-items: center; gap: 16px; font-size: 1.5rem; color: var(--primary); }
     
@@ -93,12 +96,13 @@
     .card-title { font-weight: 800; font-size: 0.95rem; margin-bottom: 16px; color: var(--primary); display: flex; justify-content: space-between; align-items: center; }
     .link-text { font-size: 0.85rem; color: var(--accent); font-weight: 700; cursor: pointer; }
     
-    .data-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
-    .data-table td, .data-table th { padding: 12px 0; border-bottom: 1px solid var(--border); }
+    /* Forced Text Wrapping for tables */
+    .data-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; table-layout: fixed; }
+    .data-table td, .data-table th { padding: 12px 0; border-bottom: 1px solid var(--border); word-wrap: break-word; overflow-wrap: break-word; }
     .data-table tr:last-child td { border-bottom: none; }
-    .td-title { font-weight: 700; color: var(--primary); }
-    .td-sub { color: var(--text-muted); font-size: 0.75rem; margin-top: 3px; font-weight: 600; }
-    .td-amount { text-align: right; font-weight: 800; color: var(--success); }
+    .td-title { font-weight: 700; color: var(--primary); word-break: break-word; }
+    .td-sub { color: var(--text-muted); font-size: 0.75rem; margin-top: 3px; font-weight: 600; word-break: break-all; }
+    .td-amount { text-align: right; font-weight: 800; color: var(--success); white-space: nowrap; width: 35%; }
     
     .profile-row { display: flex; justify-content: space-between; align-items: center; padding: 16px; background: var(--card); border-radius: 16px; margin-bottom: 12px; font-weight: 700; color: var(--primary); }
     .toggle-switch { width: 50px; height: 28px; background: var(--border); border-radius: 20px; position: relative; cursor: pointer; transition: 0.3s; }
@@ -112,7 +116,7 @@
     .btn:disabled { opacity: 0.7; cursor: not-allowed; }
     .btn-accent { background: var(--accent); }
     .btn-outline { background: transparent; color: var(--primary); border: 2px solid var(--primary); }
-    input, select, textarea { width: 100%; padding: 14px; border: 1px solid var(--border); border-radius: 12px; margin-bottom: 16px; background: var(--surface); color: var(--primary); font-weight: 600; font-size: 1rem; }
+    input, select, textarea { width: 100%; padding: 14px; border: 1px solid var(--border); border-radius: 12px; margin-bottom: 16px; background: var(--surface); color: var(--primary); font-weight: 600; font-size: 1rem; white-space: pre-wrap; }
     
     #auth { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 24px; text-align: center; }
     .auth-box { width: 100%; max-width: 400px; background: var(--card); padding: 32px 24px; border-radius: 24px; }
@@ -125,7 +129,6 @@
     .toast-content i { font-size: 1.2rem; }
     .toast-close { background: rgba(0,0,0,0.2); border: none; border-radius: 50%; color: white; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
 
-    /* Custom Install Banner */
     #install-banner { display: none; position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 400px; background: var(--card); border: 2px solid var(--primary); padding: 12px 16px; border-radius: 16px; z-index: 1000; box-shadow: 0 8px 24px rgba(0,0,0,0.15); align-items: center; justify-content: space-between; pointer-events: auto; }
   </style>
 </head>
@@ -133,7 +136,7 @@
 
   <!-- AUTH SCREEN -->
   <div id="auth">
-    <img src="https://misse-a.github.io/familychama/chamalogoii.svg" alt="Logo" style="height: 60px; margin-bottom: 30px;">
+    <img src="https://misse-a.github.io/familychama/chamalogoii.svg" alt="Logo" class="auth-logo">
     
     <div id="login-form" class="auth-box">
       <h2 style="color: var(--primary); margin-bottom: 24px; font-weight: 800;">Welcome Back</h2>
@@ -263,7 +266,6 @@
       </div>
     </div>
 
-    <!-- 2. TRANSACTIONS VIEW -->
     <div id="view-transactions" class="view">
       <div class="greeting">
         <h1>Transactions</h1>
@@ -292,7 +294,6 @@
       </div>
     </div>
 
-    <!-- 3. REPORTS VIEW -->
     <div id="view-reports" class="view">
       <div class="greeting">
         <h1>Group Reports</h1>
@@ -385,10 +386,11 @@
           </div>
         </div>
         
-        <div style="height: 1px; background: var(--border); margin: 16px -20px;"></div>
-        <select id="entry-member"></select>
+        <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 700; text-align: center; margin: 16px 0;">— OR ENTER MANUALLY —</div>
+        
+        <select id="entry-member"><option value="">Select Member...</option></select>
         <input type="number" id="entry-amount" placeholder="Amount (KES)">
-        <input type="text" id="entry-code" placeholder="M-Pesa Code">
+        <input type="text" id="entry-code" placeholder="M-Pesa Code (Optional)">
         <select id="entry-type"><option value="Shares">Shares / Savings</option><option value="Loan Repayment">Loan Repayment</option><option value="Loan Taken">Loan Taken</option></select>
         <button class="btn btn-accent" id="btn-admin-submit" onclick="submitTransaction()">
           <span class="spinner" id="admin-spinner"></span> <span id="admin-btn-text">Record Transaction</span>
@@ -408,7 +410,7 @@
     <!-- PWA Install Banner -->
     <div id="install-banner">
       <div style="display: flex; align-items: center; gap: 12px;">
-        <img src="https://misse-a.github.io/familychama/chamalogoicon.png" style="width: 32px; height: 32px; border-radius: 8px;">
+        <img src="https://misse-a.github.io/familychama/chamalogoicon.png" style="width: 32px; height: 32px; border-radius: 8px; background: white; padding: 2px;">
         <div style="display: flex; flex-direction: column;">
           <span style="font-weight: 800; font-size: 0.95rem; color: var(--primary);">Install App</span>
           <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600;">Add Chama to your home screen</span>
@@ -423,7 +425,7 @@
 
   <script>
     // --- APP CONFIG ---
-    const API_URL = "https://script.google.com/macros/s/AKfycbzQfDzCPhTSFQbinHrJHnMW75jf_WfQMXzybNQlPUjTsdvB92tLrz0iulKH5w1vfQ5JgA/exec"; 
+    const API_URL = "YOUR_NEW_WEB_APP_URL_HERE"; 
     
     let state = { user: null, data: { members: [], transactions: [], loans: [], messages: [] }, adminFilter: 'mine', isLoaded: false };
     let chatInterval = null;
@@ -445,10 +447,33 @@
       }
     });
 
+    // --- RESTORE SESSION ON REFRESH ---
     window.addEventListener('DOMContentLoaded', () => {
-      if (localStorage.getItem('biometric_enabled') === 'true' && localStorage.getItem('saved_email')) {
-        document.getElementById('btn-bio-login').style.display = 'inline-block';
-        document.getElementById('auth-id').value = localStorage.getItem('saved_email');
+      const savedUser = localStorage.getItem('chama_user');
+      if (savedUser) {
+        state.user = JSON.parse(savedUser);
+        
+        document.getElementById('auth').style.display = 'none';
+        document.getElementById('app').style.display = 'block';
+        
+        updateHeaderAvatar();
+        
+        if(state.user.role === 'Admin') {
+          document.getElementById('head-admin-icon').style.display = 'flex';
+          document.getElementById('home-admin-toggle').style.display = 'flex';
+          document.getElementById('tx-admin-toggle').style.display = 'flex';
+        }
+        
+        navigate('home'); 
+        applyTheme(localStorage.getItem('theme') || 'light');
+        startChatPolling();
+        
+        loadData();
+      } else {
+        if (localStorage.getItem('biometric_enabled') === 'true' && localStorage.getItem('saved_email')) {
+          document.getElementById('btn-bio-login').style.display = 'inline-block';
+          document.getElementById('auth-id').value = localStorage.getItem('saved_email');
+        }
       }
     });
 
@@ -567,6 +592,7 @@
           
           window.currentPinHash = pinHash;
           localStorage.setItem('saved_email', identifier);
+          localStorage.setItem('chama_user', JSON.stringify(state.user)); // Save session
           
           updateHeaderAvatar(); 
           
@@ -615,7 +641,7 @@
           showToast("Credentials expired. Please use PIN.");
         }
       } catch (e) {
-        showToast("Biometric authentication failed.");
+        showToast("Biometric authentication failed. Please use PIN.");
       }
     }
 
@@ -635,7 +661,10 @@
               rp: { name: "Family Chama", id: window.location.hostname },
               user: { id: new Uint8Array(16), name: state.user.email, displayName: state.user.username },
               pubKeyCredParams: [{type: "public-key", alg: -7}],
-              authenticatorSelection: { userVerification: "required" },
+              authenticatorSelection: { 
+                authenticatorAttachment: "platform", // Forces local device scanner (Android/iOS)
+                userVerification: "required" 
+              },
               timeout: 60000
             }
           });
@@ -658,6 +687,9 @@
     function logout() {
       state.user = null;
       state.isLoaded = false;
+      
+      localStorage.removeItem('chama_user'); // Clear session
+      
       document.getElementById('auth').style.display = 'flex';
       document.getElementById('app').style.display = 'none';
       document.getElementById('auth-pin').value = '';
@@ -698,6 +730,7 @@
       if (viewId === 'chat') renderChat(true);
       if (viewId === 'reports') renderReports();
       if (viewId === 'profile') setupProfileView();
+      if (viewId === 'admin') populateAdminDropdown();
       window.scrollTo(0,0);
     }
     
@@ -747,6 +780,7 @@
           state.isLoaded = true;
           updateChatBadge(); 
           if (document.getElementById('view-home').classList.contains('active')) renderHome();
+          populateAdminDropdown();
         }
       } catch (e) {
         showToast("Error synchronizing data");
@@ -773,7 +807,7 @@
       return `
         <tr>
           <td><div class="td-title">${nameStr}</div><div class="td-sub">${new Date(t.date).toLocaleDateString('en-GB', {day:'2-digit', month:'short'})} • ${t.type}</div></td>
-          <td><div class="td-sub">${t.code || '-'}</div></td>
+          <td><div class="td-sub" style="word-break: break-all;">${t.code || '-'}</div></td>
           <td class="td-amount" style="color: ${color}">KES ${parseFloat(t.amount).toLocaleString()}</td>
         </tr>`;
     }
@@ -921,6 +955,7 @@
           document.getElementById('profile-avatar-large').innerText = '';
           
           state.user.avatar = base64;
+          localStorage.setItem('chama_user', JSON.stringify(state.user));
           updateHeaderAvatar();
           
           showToast("Saving profile picture...", false);
@@ -945,7 +980,13 @@
       if (pin.length === 4) payload.newPinHash = await hashPIN(pin);
       
       const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) }).then(r=>r.json());
-      if(res.success) { showToast("Profile Updated!", false); state.user.username = username; setupProfileView(); document.getElementById('prof-pin').value = ''; }
+      if(res.success) { 
+        showToast("Profile Updated!", false); 
+        state.user.username = username; 
+        localStorage.setItem('chama_user', JSON.stringify(state.user));
+        setupProfileView(); 
+        document.getElementById('prof-pin').value = ''; 
+      }
       else { showToast(res.message); }
     }
 
@@ -981,7 +1022,7 @@
         return `
         <div style="margin-bottom: 12px; display: flex; flex-direction: column; align-items: ${isMe ? 'flex-end' : 'flex-start'}">
           <div style="font-size: 0.7rem; color: var(--text-muted); margin-bottom: 2px; font-weight: 700;">${name}</div>
-          <div style="padding: 10px 14px; border-radius: 16px; background: ${isMe ? 'var(--primary)' : 'var(--card)'}; color: ${isMe ? 'white' : 'var(--primary)'}; font-weight: 600; font-size: 0.9rem; border: 1px solid var(--border); max-width: 85%;">
+          <div style="padding: 10px 14px; border-radius: 16px; background: ${isMe ? 'var(--primary)' : 'var(--card)'}; color: ${isMe ? 'white' : 'var(--primary)'}; font-weight: 600; font-size: 0.9rem; border: 1px solid var(--border); max-width: 85%; word-break: break-word; white-space: pre-wrap;">
             ${m.msg}
           </div>
         </div>`;
@@ -996,6 +1037,13 @@
       state.data.messages.push({ sender: state.user.email, msg: msg, timestamp: new Date().toISOString() });
       renderChat(true);
       await fetch(API_URL, { method: 'POST', body: JSON.stringify({action: 'addMessage', sender: state.user.email, recipient: 'Group', msg}) });
+    }
+
+    function populateAdminDropdown() {
+      const sel = document.getElementById('entry-member');
+      if (sel && state.data && state.data.members) {
+        sel.innerHTML = '<option value="">Select Member...</option>' + state.data.members.map(m => `<option value="${m.email}">${m.name} (${m.username || ''})</option>`).join('');
+      }
     }
 
     function parseMPesa() {
@@ -1027,8 +1075,8 @@
           "allan": "Allan Mise",
           "jackline": "Jackline Nyambura",
           "caroline": "Caroline Wangui",
-          "caroline": "Caroline Wangui",
-          "Elizabeth": "Elizabeth Wangeci"
+          "caleb": "Caleb",
+          "florence": "Florence"
         };
 
         let targetName = "";
@@ -1038,11 +1086,9 @@
             break;
           }
         }
-
-        const sel = document.getElementById('entry-member');
-        sel.innerHTML = state.data.members.map(m => `<option value="${m.email}">${m.name} (${m.username || ''})</option>`).join('');
         
         if (targetName) {
+          const sel = document.getElementById('entry-member');
           for (let i = 0; i < sel.options.length; i++) { 
             if (sel.options[i].text.toLowerCase().includes(targetName.toLowerCase())) { 
               sel.selectedIndex = i; 
