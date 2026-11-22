@@ -1,0 +1,1020 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Family Chama</title>
+  <link rel="icon" type="image/png" href="https://misse-a.github.io/kesflow/logoicon.png">
+  <link rel="manifest" href="manifest.json">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+  
+  <style>
+    :root {
+      --main-bg: #e8ecef; 
+      --primary: #0f5560; 
+      --accent: #ff6a4d;  
+      
+      --surface: var(--main-bg);
+      --card: #ffffff;
+      --border: #d1d8dc;
+      --text: #11181a;
+      --text-muted: #6b7a7e;
+      --success: #2E7D32;
+      --error: #C62828;
+    }
+    [data-theme="dark"] {
+      --main-bg: #141b1d; --primary: #278191; --accent: #ff856e;
+      --surface: var(--main-bg); --card: #1e2629; --border: #3b494d;
+      --text: #e8ecef; --text-muted: #8b9a9d;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    body { background: var(--surface); color: var(--text); -webkit-tap-highlight-color: transparent; padding-bottom: 90px; overflow-x: hidden; }
+    
+    .spinner { border: 3px solid rgba(255,255,255,0.3); border-top: 3px solid white; border-radius: 50%; width: 18px; height: 18px; animation: spin 1s linear infinite; display: inline-block; vertical-align: middle; margin-right: 8px; display: none; }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+    .skeleton-box { background: linear-gradient(90deg, var(--border) 25%, var(--surface) 50%, var(--border) 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 8px; display: inline-block; }
+    @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+    #app { display: none; }
+    header { display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; background: var(--surface); position: sticky; top: 0; z-index: 90; }
+    .header-left { display: flex; align-items: center; gap: 12px; }
+    .header-logo { height: 32px; width: auto; cursor: pointer; }
+    .header-title { font-weight: 800; font-size: 1.1rem; color: var(--primary); }
+    .header-actions { display: flex; align-items: center; gap: 16px; font-size: 1.5rem; color: var(--primary); }
+    
+    .admin-badge { background: var(--primary); color: white; padding: 6px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 700; display: flex; align-items: center; gap: 4px; cursor: pointer; }
+    
+    .sidebar-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 100; opacity: 0; pointer-events: none; transition: 0.3s; }
+    .sidebar-overlay.active { opacity: 1; pointer-events: auto; }
+    .sidebar { position: fixed; top: 0; left: -280px; width: 280px; height: 100%; background: var(--card); z-index: 101; transition: 0.3s; padding: 24px; }
+    .sidebar.active { left: 0; }
+    .side-nav-item { display: flex; align-items: center; gap: 12px; font-size: 1.1rem; font-weight: 700; color: var(--primary); padding: 16px 0; border-bottom: 1px solid var(--border); cursor: pointer; }
+    
+    .search-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--surface); z-index: 110; display: none; flex-direction: column; padding: 20px; animation: slideDown 0.3s; }
+    @keyframes slideDown { from { transform: translateY(-20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    .search-input-wrap { display: flex; align-items: center; background: var(--card); border-radius: 12px; padding: 8px 16px; border: 2px solid var(--primary); flex: 1; }
+    .search-input-wrap input { border: none; outline: none; flex: 1; margin: 0; padding: 8px; background: transparent; }
+    
+    .admin-toggle { background: var(--surface); border: 2px solid var(--primary); border-radius: 12px; display: flex; overflow: hidden; margin-bottom: 16px; width: 100%; }
+    .admin-toggle button { flex: 1; padding: 10px; border: none; background: transparent; color: var(--primary); font-size: 0.85rem; font-weight: 700; cursor: pointer; transition: 0.2s; }
+    .admin-toggle button.active { background: var(--primary); color: white; }
+
+    .avatar { width: 32px; height: 32px; background: var(--primary); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 0.8rem; background-size: cover; background-position: center; }
+    .badge { position: absolute; top: -5px; right: 25px; background: var(--error); color: white; font-size: 0.6rem; font-weight: 800; padding: 2px 6px; border-radius: 10px; display: none; border: 2px solid var(--card); }
+
+    .bottom-nav { position: fixed; bottom: 0; width: 100%; background: var(--card); display: flex; justify-content: space-around; padding: 12px 0 calc(12px + env(safe-area-inset-bottom)); z-index: 90; border-top: 1px solid var(--border); }
+    .nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; color: var(--text-muted); font-size: 0.75rem; font-weight: 600; cursor: pointer; position: relative; }
+    .nav-item i { font-size: 1.6rem; }
+    .nav-item.active { color: var(--primary); }
+
+    .view { display: none; padding: 0 20px; }
+    .view.active { display: block; animation: fadeIn 0.3s; }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    
+    .greeting { margin: 10px 0 20px 0; }
+    .greeting h1 { font-size: 1.6rem; font-weight: 800; color: var(--primary); }
+    .card { background: var(--card); border-radius: 20px; padding: 20px; margin-bottom: 20px; }
+    .card-title { font-weight: 800; font-size: 0.95rem; margin-bottom: 16px; color: var(--primary); display: flex; justify-content: space-between; align-items: center; }
+    .link-text { font-size: 0.85rem; color: var(--accent); font-weight: 700; cursor: pointer; }
+    
+    .data-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+    .data-table td, .data-table th { padding: 12px 0; border-bottom: 1px solid var(--border); }
+    .data-table tr:last-child td { border-bottom: none; }
+    .td-title { font-weight: 700; color: var(--primary); }
+    .td-sub { color: var(--text-muted); font-size: 0.75rem; margin-top: 3px; font-weight: 600; }
+    .td-amount { text-align: right; font-weight: 800; color: var(--success); }
+    
+    .profile-row { display: flex; justify-content: space-between; align-items: center; padding: 16px; background: var(--card); border-radius: 16px; margin-bottom: 12px; font-weight: 700; color: var(--primary); }
+    .toggle-switch { width: 50px; height: 28px; background: var(--border); border-radius: 20px; position: relative; cursor: pointer; transition: 0.3s; }
+    .toggle-switch::after { content: ''; position: absolute; top: 3px; left: 3px; width: 22px; height: 22px; background: white; border-radius: 50%; transition: 0.3s; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    .toggle-switch.active { background: var(--primary); }
+    .toggle-switch.active::after { left: 25px; }
+    
+    .avatar-large { width: 110px; height: 110px; font-size: 2.5rem; margin: 0 auto; position: relative; border: 4px solid var(--card); box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+
+    .btn { background: var(--primary); color: white; border: none; padding: 14px 20px; border-radius: 12px; font-size: 1rem; font-weight: 700; cursor: pointer; width: 100%; margin-bottom: 12px; }
+    .btn:disabled { opacity: 0.7; cursor: not-allowed; }
+    .btn-accent { background: var(--accent); }
+    .btn-outline { background: transparent; color: var(--primary); border: 2px solid var(--primary); }
+    input, select, textarea { width: 100%; padding: 14px; border: 1px solid var(--border); border-radius: 12px; margin-bottom: 16px; background: var(--surface); color: var(--primary); font-weight: 600; font-size: 1rem; }
+    
+    #auth { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 24px; text-align: center; }
+    .auth-box { width: 100%; max-width: 400px; background: var(--card); padding: 32px 24px; border-radius: 24px; }
+
+    #toast-container { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 9999; display: flex; flex-direction: column; gap: 10px; width: 90%; max-width: 400px; pointer-events: none; }
+    .toast { background: var(--error); color: white; padding: 14px 20px; border-radius: 12px; font-weight: 700; font-size: 0.9rem; box-shadow: 0 4px 12px rgba(0,0,0,0.15); opacity: 0; transform: translateY(-20px); transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55); display: flex; align-items: center; justify-content: space-between; pointer-events: auto; }
+    .toast.show { opacity: 1; transform: translateY(0); }
+    .toast.success { background: var(--success); }
+    .toast-content { display: flex; align-items: center; gap: 10px; }
+    .toast-content i { font-size: 1.2rem; }
+    .toast-close { background: rgba(0,0,0,0.2); border: none; border-radius: 50%; color: white; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+  </style>
+</head>
+<body>
+
+  <!-- AUTH SCREEN -->
+  <div id="auth">
+    <img src="https://misse-a.github.io/kesflow/kesflow-logo.svg" alt="Logo" style="height: 60px; margin-bottom: 30px;">
+    
+    <div id="login-form" class="auth-box">
+      <h2 style="color: var(--primary); margin-bottom: 24px; font-weight: 800;">Welcome Back</h2>
+      <input type="text" id="auth-id" placeholder="Email or Username" required>
+      <input type="password" id="auth-pin" placeholder="4-Digit PIN" pattern="\d{4}" maxlength="4" required oninput="if(this.value.length === 4) login()">
+      <button class="btn btn-accent" id="btn-login" onclick="login()">
+        <span class="spinner" id="login-spinner"></span> <span id="login-text">Login</span>
+      </button>
+      
+      <!-- BIOMETRIC LOGIN BUTTON -->
+      <button class="btn btn-outline" id="btn-bio-login" style="display:none; margin-top: 12px;" onclick="bioLogin()">
+        <i class="ph-fill ph-fingerprint" style="margin-right:4px;"></i> Biometric Login
+      </button>
+
+      <p style="margin-top: 16px; font-size: 0.9rem; color: var(--primary); font-weight: 600; cursor: pointer;" onclick="toggleOTP()">First time setup / Forgot PIN?</p>
+    </div>
+
+    <!-- OTP SETUP FORM -->
+    <div id="otp-form" class="auth-box" style="display: none;">
+      <h2 style="color: var(--primary); margin-bottom: 24px; font-weight: 800;">Setup Account</h2>
+      <input type="email" id="otp-email" placeholder="Registered Email Address">
+      <button class="btn btn-accent" id="btn-req-otp" onclick="requestOTP()">Send Setup Code</button>
+      
+      <div id="otp-step-2" style="display: none; margin-top: 16px; border-top: 1px solid var(--border); padding-top: 24px;">
+        <input type="number" id="otp-code" placeholder="4-Digit Code">
+        <input type="text" id="otp-username" placeholder="Username">
+        <input type="password" id="otp-new-pin" placeholder="Create 4-Digit PIN" maxlength="4">
+        <button class="btn btn-primary" onclick="verifyOTP()">Complete Setup</button>
+      </div>
+      
+      <p style="margin-top: 16px; font-size: 0.9rem; color: var(--text-muted); cursor: pointer;" onclick="toggleOTP()">Back to Login</p>
+    </div>
+  </div>
+
+  <!-- MAIN APP -->
+  <div id="app">
+    <header>
+      <div class="header-left">
+        <i class="ph ph-list" style="font-size: 1.8rem; color: var(--primary); cursor: pointer;" onclick="toggleSidebar(true)"></i>
+        <div id="header-avatar" class="avatar" style="display:none; cursor:pointer; width: 34px; height: 34px;" onclick="navigate('profile')"></div>
+        <img src="https://misse-a.github.io/kesflow/kesflow-logo.svg" alt="Logo" class="header-logo" id="header-logo-img" onclick="navigate('home')">
+        <span class="header-title" onclick="navigate('home')" style="cursor:pointer;">Family Chama</span>
+      </div>
+      <div class="header-actions">
+        <i class="ph ph-magnifying-glass" style="cursor: pointer;" onclick="toggleSearch(true)"></i>
+        <div id="head-admin-icon" class="admin-badge" style="display: none;" onclick="navigate('admin')">
+          <i class="ph-fill ph-lock-key"></i> Admin
+        </div>
+      </div>
+    </header>
+
+    <div class="sidebar-overlay" onclick="toggleSidebar(false)"></div>
+    <div class="sidebar" id="sidebar">
+      <div style="text-align: right; margin-bottom: 20px;"><i class="ph ph-x" style="font-size: 1.5rem; color: var(--primary); cursor: pointer;" onclick="toggleSidebar(false)"></i></div>
+      <div class="side-nav-item" onclick="navigate('home'); toggleSidebar(false);"><i class="ph ph-house"></i> Overview (Home)</div>
+      <div class="side-nav-item" onclick="navigate('transactions'); toggleSidebar(false);"><i class="ph ph-arrows-left-right"></i> Transactions</div>
+      <div class="side-nav-item" onclick="navigate('reports'); toggleSidebar(false);"><i class="ph ph-presentation-chart"></i> Reports & Data</div>
+      <div class="side-nav-item" onclick="navigate('rules'); toggleSidebar(false);"><i class="ph ph-book-open-text"></i> Group Rules</div>
+      <div class="side-nav-item" onclick="forceSync(); toggleSidebar(false);"><i class="ph ph-arrows-clockwise" id="sync-icon"></i> Sync Data</div>
+    </div>
+
+    <div class="search-modal" id="search-modal">
+      <div style="display: flex; gap: 12px; margin-bottom: 20px;">
+        <div class="search-input-wrap">
+          <i class="ph ph-magnifying-glass" style="color:var(--primary); font-size:1.2rem;"></i>
+          <input type="text" id="search-input" placeholder="Search M-Pesa, name, or amount..." oninput="executeSearch()">
+        </div>
+        <button class="btn btn-outline" style="width: auto; margin:0;" onclick="toggleSearch(false)">Cancel</button>
+      </div>
+      <div style="flex: 1; overflow-y: auto;">
+        <table class="data-table" id="search-results"><tbody></tbody></table>
+      </div>
+    </div>
+
+    <div id="view-home" class="view">
+      <div class="greeting">
+        <h1 id="greeting-title">Good to see you</h1>
+        <p id="alert-banner">Doing great! Keep saving.</p>
+      </div>
+      
+      <div class="admin-toggle" id="home-admin-toggle" style="display: none;">
+        <button class="active" id="btn-home-mine" onclick="setAdminFilter('home', 'mine')">My Data</button>
+        <button id="btn-home-all" onclick="setAdminFilter('home', 'all')">Group Data</button>
+      </div>
+
+      <div class="card">
+        <div style="display:flex; justify-content: space-between;">
+          <div>
+            <div style="font-weight: 700; color: var(--text-muted); font-size: 0.8rem; margin-bottom: 4px; text-transform: uppercase;">Saved</div>
+            <h2 style="font-size: 2rem; font-weight: 800; color: var(--primary); margin-bottom: 4px;">KES <span id="home-saved"><div class="skeleton-box" style="width:80px; height:24px;"></div></span></h2>
+            <p style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted);">of KES 36,600 target</p>
+          </div>
+          <div style="position:relative; width:80px; height:80px; display:flex; justify-content:center; align-items:center;">
+            <svg style="width:100%; height:100%; transform:rotate(90deg);" viewBox="0 0 100 100">
+              <path fill="none" stroke="var(--surface)" stroke-width="8" d="M 50 90 A 40 40 0 1 0 50 10"/>
+              <path fill="none" stroke="var(--accent)" stroke-width="8" stroke-linecap="round" stroke-dasharray="200" id="home-arc" d="M 50 90 A 40 40 0 1 0 50 10"/>
+            </svg>
+            <div style="position:absolute; text-align:center;"><strong style="font-size:1rem; color:var(--primary); display:block;" id="home-pct">-</strong><span style="font-size:0.55rem; font-weight:700; color:var(--text-muted);">OF TARGET</span></div>
+          </div>
+        </div>
+        <div style="height: 1px; background: var(--border); margin: 16px -20px;"></div>
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <div style="color: var(--success); font-weight: 700; font-size: 0.85rem;">Loan: KES <span id="home-loan"><div class="skeleton-box" style="width:40px; height:14px; transform:translateY(2px)"></div></span></div>
+          <div style="font-weight: 700; color: var(--primary); font-size: 0.85rem;" id="home-paid-until">
+            <div class="skeleton-box" style="width:80px; height:14px; transform:translateY(2px)"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Recent Transactions <span class="link-text" onclick="navigate('transactions')">View All</span></div>
+        <table class="data-table" id="home-tx-table">
+          <tbody>
+            <tr><td><div class="skeleton-box" style="width:100px; height:14px;"></div><br><div class="skeleton-box" style="width:140px; height:12px; margin-top:4px;"></div></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Group Summary</div>
+        <table class="data-table" id="home-group-table">
+          <thead><tr><th style="text-align:left; color:var(--text-muted); font-size:0.75rem;">Name</th><th style="text-align:right; color:var(--text-muted); font-size:0.75rem;">Savings</th><th style="text-align:right; color:var(--text-muted); font-size:0.75rem;">Loan</th></tr></thead>
+          <tbody>
+            <tr><td colspan="3"><div class="skeleton-box" style="width:100%; height:14px;"></div></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div id="view-transactions" class="view">
+      <div class="greeting">
+        <h1>Transactions</h1>
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <p>Your ledger history.</p>
+          <span class="link-text" onclick="navigate('reports')">View Group Reports ➔</span>
+        </div>
+      </div>
+      
+      <div class="admin-toggle" id="tx-admin-toggle" style="display: none;">
+        <button class="active" id="btn-tx-mine" onclick="setAdminFilter('tx', 'mine')">My Transactions</button>
+        <button id="btn-tx-all" onclick="setAdminFilter('tx', 'all')">All Members</button>
+      </div>
+      
+      <div class="card">
+        <select id="report-filter" onchange="renderTransactions()">
+          <option value="All">All Transactions</option>
+          <option value="Shares">Contributions</option>
+          <option value="Loan Repayment">Loan Repayments</option>
+        </select>
+        <table class="data-table" id="tx-full-table"><tbody></tbody></table>
+      </div>
+    </div>
+
+    <div id="view-reports" class="view">
+      <div class="greeting">
+        <h1>Group Reports</h1>
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <p>Financial overview for all members.</p>
+          <span class="link-text" onclick="navigate('transactions')">View Transactions ➔</span>
+        </div>
+      </div>
+      
+      <div class="card">
+        <div class="card-title">Group Financials</div>
+        <table class="data-table">
+          <tr><td class="td-title">Total Group Savings</td><td class="td-amount">KES <span id="rep-sav">0</span></td></tr>
+          <tr><td class="td-title">Total Loans Given Out</td><td class="td-amount" style="color: var(--accent);">KES <span id="rep-loan">0</span></td></tr>
+          <tr><td class="td-title">Total Interest Generated</td><td class="td-amount">KES <span id="rep-int">0</span></td></tr>
+          <tr><td class="td-title">Bank/Cash Balance</td><td class="td-amount" style="color: var(--success);">KES <span id="rep-bal">0</span></td></tr>
+        </table>
+      </div>
+    </div>
+
+    <div id="view-chat" class="view">
+      <div class="greeting"><h1>Group Chat</h1></div>
+      <div class="card" style="height: 65vh; display: flex; flex-direction: column; padding: 16px;">
+        <div id="chat-messages" style="flex: 1; overflow-y: auto; margin-bottom: 16px; padding-right: 8px;"></div>
+        <div style="display: flex; gap: 8px;">
+          <input type="text" id="chat-input" placeholder="Type message..." style="margin: 0; flex: 1; border-radius: 20px;">
+          <button class="btn btn-accent" style="width: auto; border-radius: 20px; padding: 0 20px; margin: 0;" onclick="sendMessage()"><i class="ph-fill ph-paper-plane-right"></i></button>
+        </div>
+      </div>
+    </div>
+
+    <div id="view-profile" class="view">
+      <div class="greeting"><h1>Profile</h1></div>
+      
+      <!-- FIXED AVATAR UPLOAD -->
+      <div class="avatar-large avatar" id="profile-avatar-large" style="position: relative; overflow: hidden;">
+        <div style="position: absolute; bottom: -2px; right: 0; background: var(--accent); color: white; width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; border: 3px solid var(--card); pointer-events: none; z-index: 10;">
+          <i class="ph-fill ph-camera"></i>
+        </div>
+        <!-- Transparent input entirely covers the avatar ensuring click works everywhere -->
+        <input type="file" id="avatar-upload" accept="image/*" style="position: absolute; width: 100%; height: 100%; top: 0; left: 0; opacity: 0; cursor: pointer; z-index: 20;" onchange="handleAvatarUpload(event)">
+      </div>
+      
+      <div style="text-align: center; margin: 20px 0 30px 0;">
+        <div style="color: var(--accent); font-size: 0.8rem; font-weight: 700; text-transform: uppercase;">Display Name</div>
+        <h2 style="color: var(--primary); font-size: 1.8rem; font-weight: 800; border-bottom: 2px solid var(--border); padding-bottom: 12px; display: inline-block; min-width: 200px;" id="prof-display-name">Name</h2>
+      </div>
+
+      <div class="profile-row">
+        <div>Dark Mode</div>
+        <div class="toggle-switch" id="theme-toggle" onclick="toggleTheme()"></div>
+      </div>
+      
+      <div class="profile-row">
+        <div>Biometric Login<br><span style="font-size:0.7rem; color:var(--text-muted); font-weight:600;">Use FaceID / Fingerprint</span></div>
+        <div class="toggle-switch" id="bio-toggle" onclick="toggleBio()"></div>
+      </div>
+
+      <div class="card" style="margin-top: 24px;">
+        <div class="card-title">Security & Account</div>
+        <input type="text" id="prof-username" placeholder="Change Username">
+        <input type="password" id="prof-pin" placeholder="Change 4-Digit PIN" maxlength="4">
+        <button class="btn btn-accent" onclick="updateProfileSettings()">Update Details</button>
+      </div>
+      
+      <button class="btn btn-outline" style="border: 2px solid var(--error); color: var(--error);" onclick="logout()">Logout</button>
+    </div>
+
+    <div id="view-rules" class="view">
+      <div class="greeting"><h1>Group Rules</h1></div>
+      <div class="card" style="font-size: 0.95rem; line-height: 1.6; color: var(--primary); font-weight: 600;">
+        <p>1. Contributions are KES 100 per day.</p>
+        <p>2. Savings run from Dec 1, 2026 to Dec 1, 2027.</p>
+        <p>3. Loans are immediately charged 10%.</p>
+        <p>4. Remaining loans compound 10% every Monday.</p>
+      </div>
+    </div>
+
+    <div id="view-admin" class="view">
+      <div class="greeting"><h1>Data Entry</h1></div>
+      <div class="card">
+        
+        <!-- OCR CAMERA UI ADDED -->
+        <div style="display: flex; gap: 8px; margin-bottom: 16px;">
+          <textarea id="mpesa-paste" rows="3" placeholder="Paste M-Pesa SMS here..." style="margin:0; flex:1;" oninput="parseMPesa()"></textarea>
+          
+          <div style="position:relative; width:70px; background:var(--surface); border:1px solid var(--border); border-radius:12px; display:flex; flex-direction:column; align-items:center; justify-content:center; color:var(--primary);">
+            <i class="ph-fill ph-camera" style="font-size:1.5rem;"></i>
+            <span style="font-size:0.6rem; font-weight:800; margin-top:4px;">SCAN</span>
+            <input type="file" accept="image/*" capture="environment" style="position:absolute; width:100%; height:100%; top:0; left:0; opacity:0; cursor:pointer;" onchange="handleMpesaOCR(event)">
+          </div>
+        </div>
+        
+        <div style="height: 1px; background: var(--border); margin: 16px -20px;"></div>
+        <select id="entry-member"></select>
+        <input type="number" id="entry-amount" placeholder="Amount (KES)">
+        <input type="text" id="entry-code" placeholder="M-Pesa Code">
+        <select id="entry-type"><option value="Shares">Shares / Savings</option><option value="Loan Repayment">Loan Repayment</option><option value="Loan Taken">Loan Taken</option></select>
+        <button class="btn btn-accent" id="btn-admin-submit" onclick="submitTransaction()">
+          <span class="spinner" id="admin-spinner"></span> <span id="admin-btn-text">Record Transaction</span>
+        </button>
+      </div>
+    </div>
+
+    <nav class="bottom-nav">
+      <div class="nav-item active" id="nav-home" onclick="navigate('home')"><i class="ph ph-house" id="icon-home"></i><span>Home</span></div>
+      <div class="nav-item" id="nav-transactions" onclick="navigate('transactions')"><i class="ph ph-arrows-left-right" id="icon-transactions"></i><span>Transactions</span></div>
+      <div class="nav-item" id="nav-chat" onclick="navigate('chat')">
+        <i class="ph ph-chat-circle" id="icon-chat"></i><span>Chat</span><div class="badge" id="chat-badge">0</div>
+      </div>
+      <div class="nav-item" id="nav-profile" onclick="navigate('profile')"><i class="ph ph-user" id="icon-profile"></i><span>Profile</span></div>
+    </nav>
+  </div>
+
+  <script>
+    // --- APP CONFIG ---
+    const API_URL = "https://script.google.com/macros/s/AKfycbzQfDzCPhTSFQbinHrJHnMW75jf_WfQMXzybNQlPUjTsdvB92tLrz0iulKH5w1vfQ5JgA/exec"; 
+    
+    let state = { user: null, data: { members: [], transactions: [], loans: [], messages: [] }, adminFilter: 'mine', isLoaded: false };
+    let chatInterval = null;
+
+    // --- INITIALIZE BIO BUTTON ---
+    window.addEventListener('DOMContentLoaded', () => {
+      if (localStorage.getItem('biometric_enabled') === 'true' && localStorage.getItem('saved_email')) {
+        document.getElementById('btn-bio-login').style.display = 'inline-block';
+        document.getElementById('auth-id').value = localStorage.getItem('saved_email');
+      }
+    });
+
+    function showToast(message, isError = true) {
+      let container = document.getElementById('toast-container');
+      if (!container) {
+        container = document.createElement('div');
+        container.id = 'toast-container';
+        document.body.appendChild(container);
+      }
+      
+      const toast = document.createElement('div');
+      toast.className = `toast ${isError ? '' : 'success'}`;
+      
+      const content = document.createElement('div');
+      content.className = 'toast-content';
+      content.innerHTML = `<i class="ph-fill ${isError ? 'ph-warning-circle' : 'ph-check-circle'}"></i> <span>${message}</span>`;
+      
+      const closeBtn = document.createElement('button');
+      closeBtn.className = 'toast-close';
+      closeBtn.innerHTML = '<i class="ph ph-x" style="font-size:14px"></i>';
+      closeBtn.onclick = () => removeToast(toast);
+      
+      toast.appendChild(content);
+      toast.appendChild(closeBtn);
+      container.appendChild(toast);
+      
+      setTimeout(() => toast.classList.add('show'), 10);
+      setTimeout(() => { if(toast.parentNode) removeToast(toast); }, 8000);
+    }
+    
+    function removeToast(toastElement) {
+      toastElement.classList.remove('show');
+      setTimeout(() => { if(toastElement.parentNode) toastElement.remove(); }, 300);
+    }
+
+    function toggleOTP() {
+      const loginForm = document.getElementById('login-form');
+      const otpForm = document.getElementById('otp-form');
+      if (loginForm.style.display === 'none') {
+        loginForm.style.display = 'block';
+        otpForm.style.display = 'none';
+      } else {
+        loginForm.style.display = 'none';
+        otpForm.style.display = 'block';
+        document.getElementById('otp-step-2').style.display = 'none';
+      }
+    }
+
+    async function requestOTP() {
+      const email = document.getElementById('otp-email').value.trim();
+      if (!email) return showToast("Enter your registered email address.");
+      
+      const btn = document.getElementById('btn-req-otp');
+      btn.innerText = "Sending...";
+      
+      try {
+        const res = await fetch(API_URL, { 
+          method: 'POST', body: JSON.stringify({action: 'requestOTP', email}) 
+        }).then(r=>r.json());
+        
+        if (res.success) {
+          showToast("Setup code sent to your email!", false);
+          document.getElementById('otp-step-2').style.display = 'block';
+          btn.style.display = 'none';
+        } else {
+          showToast(res.message);
+          btn.innerText = "Send Setup Code";
+        }
+      } catch (e) {
+        showToast("Error connecting to server.");
+        btn.innerText = "Send Setup Code";
+      }
+    }
+
+    async function verifyOTP() {
+      const email = document.getElementById('otp-email').value.trim();
+      const otp = document.getElementById('otp-code').value.trim();
+      const username = document.getElementById('otp-username').value.trim();
+      const pin = document.getElementById('otp-new-pin').value;
+      
+      if (!otp || !username || pin.length !== 4) return showToast("Please fill all fields, including 4-digit PIN.");
+      
+      try {
+        const pinHash = await hashPIN(pin);
+        const res = await fetch(API_URL, { 
+          method: 'POST', body: JSON.stringify({action: 'verifyOTPAndSetPIN', email, otp, pinHash, username}) 
+        }).then(r=>r.json());
+        
+        if (res.success) {
+          showToast("Account setup complete! Please log in.", false);
+          toggleOTP();
+          document.getElementById('auth-id').value = email;
+          document.getElementById('auth-pin').value = '';
+        } else showToast(res.message);
+      } catch (e) { showToast("Error connecting to server."); }
+    }
+
+    async function login(bioPinHash = null) {
+      const identifier = document.getElementById('auth-id').value;
+      let pinHash = bioPinHash;
+      
+      if (!pinHash) {
+        const pin = document.getElementById('auth-pin').value;
+        if(!identifier || pin.length !== 4) return;
+        pinHash = await hashPIN(pin);
+      }
+      
+      document.getElementById('login-text').innerText = 'Logging in...';
+      document.getElementById('login-spinner').style.display = 'inline-block';
+      
+      try {
+        const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify({action: 'login', identifier, pinHash}) }).then(r=>r.json());
+        if(res.success) {
+          state.user = res.user;
+          
+          // Securely stage data for biometrics locally
+          window.currentPinHash = pinHash;
+          localStorage.setItem('saved_email', identifier);
+          
+          updateHeaderAvatar(); 
+          
+          if(state.user.role === 'Admin') {
+            document.getElementById('head-admin-icon').style.display = 'flex';
+            document.getElementById('home-admin-toggle').style.display = 'flex';
+            document.getElementById('tx-admin-toggle').style.display = 'flex';
+          }
+          
+          document.getElementById('auth').style.display = 'none';
+          document.getElementById('app').style.display = 'block';
+          navigate('home'); 
+          
+          applyTheme(localStorage.getItem('theme') || 'light');
+          startChatPolling();
+          await loadData();
+          
+        } else showToast(res.message);
+      } catch(e) { 
+        showToast("Network Error: Verify API URL and connection."); 
+        console.error(e);
+      }
+      
+      document.getElementById('login-text').innerText = 'Login';
+      document.getElementById('login-spinner').style.display = 'none';
+    }
+
+    // --- BIOMETRICS LOGIN FLOW ---
+    async function bioLogin() {
+      try {
+        if (!window.PublicKeyCredential) return showToast("Biometrics not supported here");
+        
+        const challenge = new Uint8Array(32);
+        crypto.getRandomValues(challenge);
+        
+        await navigator.credentials.get({
+          publicKey: {
+            challenge: challenge,
+            rpId: window.location.hostname,
+            userVerification: "required"
+          }
+        });
+        
+        const savedHash = localStorage.getItem('bio_pin_hash');
+        if (savedHash) {
+          login(savedHash);
+        } else {
+          showToast("Credentials expired. Please use PIN.");
+        }
+      } catch (e) {
+        showToast("Biometric authentication failed.");
+      }
+    }
+
+    async function toggleBio() {
+      const isBio = localStorage.getItem('biometric_enabled') === 'true';
+      
+      if (!isBio) {
+        if (!window.PublicKeyCredential) return showToast("Biometrics not supported on this browser");
+        
+        try {
+          const challenge = new Uint8Array(32);
+          crypto.getRandomValues(challenge);
+          
+          await navigator.credentials.create({
+            publicKey: {
+              challenge: challenge,
+              rp: { name: "Family Chama", id: window.location.hostname },
+              user: { id: new Uint8Array(16), name: state.user.email, displayName: state.user.username },
+              pubKeyCredParams: [{type: "public-key", alg: -7}],
+              authenticatorSelection: { userVerification: "required" },
+              timeout: 60000
+            }
+          });
+          
+          localStorage.setItem('biometric_enabled', 'true');
+          localStorage.setItem('bio_pin_hash', window.currentPinHash);
+          document.getElementById('bio-toggle').classList.add('active');
+          showToast("Biometrics Enabled!", false);
+        } catch(e) {
+          showToast("Biometrics setup cancelled or failed.");
+        }
+      } else {
+        localStorage.setItem('biometric_enabled', 'false');
+        localStorage.removeItem('bio_pin_hash');
+        document.getElementById('bio-toggle').classList.remove('active');
+        showToast("Biometrics Disabled", false);
+      }
+    }
+
+    function logout() {
+      state.user = null;
+      state.isLoaded = false;
+      document.getElementById('auth').style.display = 'flex';
+      document.getElementById('app').style.display = 'none';
+      document.getElementById('auth-pin').value = '';
+      
+      document.getElementById('head-admin-icon').style.display = 'none';
+      document.getElementById('home-admin-toggle').style.display = 'none';
+      document.getElementById('tx-admin-toggle').style.display = 'none';
+      
+      if (localStorage.getItem('biometric_enabled') === 'true') {
+        document.getElementById('btn-bio-login').style.display = 'inline-block';
+      }
+    }
+
+    function navigate(viewId, pushState = true) {
+      if (viewId === 'admin' && state.user.role !== 'Admin') {
+        return showToast("Access Denied: Admin privileges required.");
+      }
+      
+      document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+      document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+      
+      ['home', 'transactions', 'chat', 'profile'].forEach(id => {
+        let el = document.getElementById(`icon-${id}`);
+        if(el) { el.classList.remove('ph-fill'); el.classList.add('ph'); }
+      });
+
+      document.getElementById(`view-${viewId}`).classList.add('active');
+      const navItem = document.getElementById(`nav-${viewId}`);
+      if(navItem) {
+        navItem.classList.add('active');
+        document.getElementById(`icon-${viewId}`).classList.remove('ph');
+        document.getElementById(`icon-${viewId}`).classList.add('ph-fill');
+      }
+      
+      if (pushState) history.pushState({ view: viewId }, '', `#${viewId}`);
+      if (viewId === 'home') renderHome();
+      if (viewId === 'transactions') renderTransactions();
+      if (viewId === 'chat') renderChat(true);
+      if (viewId === 'reports') renderReports();
+      if (viewId === 'profile') setupProfileView();
+      window.scrollTo(0,0);
+    }
+    
+    function toggleSidebar(show) {
+      document.getElementById('sidebar').classList.toggle('active', show);
+      document.querySelector('.sidebar-overlay').classList.toggle('active', show);
+    }
+    
+    function toggleSearch(show) {
+      document.getElementById('search-modal').style.display = show ? 'flex' : 'none';
+      if(show) { document.getElementById('search-input').value = ''; document.getElementById('search-results').innerHTML=''; document.getElementById('search-input').focus(); }
+    }
+    
+    function setAdminFilter(view, mode) {
+      state.adminFilter = mode;
+      document.getElementById(`btn-${view}-mine`).classList.toggle('active', mode === 'mine');
+      document.getElementById(`btn-${view}-all`).classList.toggle('active', mode === 'all');
+      if(view === 'home') renderHome(); else renderTransactions();
+    }
+
+    function formatName(fullName) {
+      if(!fullName) return 'User';
+      let parts = fullName.trim().split(' ');
+      return parts.length > 1 ? `${parts[0]} ${parts[1].charAt(0)}.` : parts[0];
+    }
+
+    function applyTheme(mode) {
+      document.documentElement.setAttribute('data-theme', mode);
+      localStorage.setItem('theme', mode);
+      const toggle = document.getElementById('theme-toggle');
+      if(toggle) mode === 'dark' ? toggle.classList.add('active') : toggle.classList.remove('active');
+    }
+    
+    function toggleTheme() { applyTheme(document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark'); }
+
+    async function hashPIN(pin) {
+      const data = new TextEncoder().encode(pin + "chama_salt");
+      const hash = await crypto.subtle.digest('SHA-256', data);
+      return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, '0')).join('');
+    }
+
+    async function loadData() {
+      try {
+        const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify({action: 'getData', email: state.user.email}) }).then(r=>r.json());
+        if(res.success) { 
+          state.data = res.data; 
+          state.isLoaded = true;
+          updateChatBadge(); 
+          if (document.getElementById('view-home').classList.contains('active')) renderHome();
+        }
+      } catch (e) {
+        showToast("Error synchronizing data");
+      }
+    }
+
+    async function forceSync() {
+      document.getElementById('sync-icon').classList.add('ph-spin');
+      await loadData();
+      document.getElementById('sync-icon').classList.remove('ph-spin');
+      navigate('home', false);
+      showToast("Data Synchronized", false);
+    }
+
+    function getFilteredTxs() {
+      if(state.user.role === 'Admin' && state.adminFilter === 'all') return state.data.transactions;
+      return state.data.transactions.filter(t => t.email === state.user.email);
+    }
+
+    function generateTxHTML(t) {
+      const userObj = state.data.members.find(m => m.email === t.email) || {};
+      const nameStr = formatName(userObj.username || userObj.name || t.email.split('@')[0]);
+      const color = t.type.includes('Loan') ? (t.type === 'Loan Taken' ? 'var(--accent)' : 'var(--primary)') : 'var(--success)';
+      return `
+        <tr>
+          <td><div class="td-title">${nameStr}</div><div class="td-sub">${new Date(t.date).toLocaleDateString('en-GB', {day:'2-digit', month:'short'})} • ${t.type}</div></td>
+          <td><div class="td-sub">${t.code || '-'}</div></td>
+          <td class="td-amount" style="color: ${color}">KES ${parseFloat(t.amount).toLocaleString()}</td>
+        </tr>`;
+    }
+
+    function renderHome() {
+      if (!state.isLoaded) return; 
+      
+      const txs = getFilteredTxs();
+      const totalSaved = txs.filter(t => t.type === 'Shares').reduce((s, t) => s + parseFloat(t.amount), 0);
+      
+      document.getElementById('greeting-title').innerText = `Good to see you, ${formatName(state.user.username || state.user.name)}`;
+      document.getElementById('home-saved').innerText = totalSaved.toLocaleString();
+      
+      const pct = Math.min((totalSaved / 36600) * 100, 100);
+      document.getElementById('home-pct').innerText = `${pct.toFixed(0)}%`;
+      document.getElementById('home-arc').style.strokeDashoffset = 200 - ((pct / 100) * 200);
+
+      const myLoan = state.data.loans.find(l => l.email === state.user.email && l.balance > 0);
+      document.getElementById('home-loan').innerText = myLoan ? parseFloat(myLoan.balance).toLocaleString() : '0';
+
+      const daysCovered = Math.floor(totalSaved / 100);
+      if (totalSaved === 0) {
+        document.getElementById('home-paid-until').innerText = 'Starts Dec 1, 2026';
+      } else {
+        const startDate = new Date('2026-12-01T00:00:00');
+        const paidUntil = new Date(startDate.getTime() + (daysCovered * 24 * 60 * 60 * 1000));
+        document.getElementById('home-paid-until').innerText = 'Paid til ' + paidUntil.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+      }
+
+      const tbody = document.querySelector('#home-tx-table tbody');
+      if (txs.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="3" style="text-align:center; color:var(--text-muted);">No transactions yet</td></tr>';
+      } else {
+        tbody.innerHTML = txs.slice(0, 5).map(generateTxHTML).join('');
+      }
+      
+      const groupTbody = document.querySelector('#home-group-table tbody');
+      groupTbody.innerHTML = state.data.members.map(m => {
+        const mSaved = state.data.transactions.filter(t => t.email === m.email && t.type === 'Shares').reduce((s,t)=>s+parseFloat(t.amount),0);
+        const mLoanObj = state.data.loans.find(l => l.email === m.email && l.balance > 0);
+        return `<tr>
+          <td style="font-weight:700; color:var(--primary); font-size:0.8rem;">${formatName(m.username || m.name)}</td>
+          <td style="text-align:right; font-weight:700; color:var(--success); font-size:0.8rem;">${mSaved.toLocaleString()}</td>
+          <td style="text-align:right; font-weight:700; color:var(--accent); font-size:0.8rem;">${mLoanObj?parseFloat(mLoanObj.balance).toLocaleString():0}</td>
+        </tr>`;
+      }).join('');
+    }
+
+    function renderTransactions() {
+      let txs = getFilteredTxs();
+      const filter = document.getElementById('report-filter').value;
+      if (filter !== 'All') txs = txs.filter(t => t.type === filter);
+      document.querySelector('#tx-full-table tbody').innerHTML = txs.map(generateTxHTML).join('');
+    }
+
+    function executeSearch() {
+      const q = document.getElementById('search-input').value.toLowerCase();
+      const txs = getFilteredTxs();
+      const res = txs.filter(t => (t.code||'').toLowerCase().includes(q) || t.amount.toString().includes(q) || t.email.toLowerCase().includes(q));
+      document.getElementById('search-results').innerHTML = res.map(generateTxHTML).join('');
+    }
+
+    function renderReports() {
+      const tx = state.data.transactions;
+      const loans = state.data.loans;
+      
+      const totalSaved = tx.filter(t=>t.type.trim() === 'Shares').reduce((s,t)=>s+parseFloat(t.amount), 0);
+      const loansOut = tx.filter(t=>t.type.trim() === 'Loan Taken').reduce((s,t)=>s+parseFloat(t.amount), 0);
+      const repaidSoFar = tx.filter(t=>t.type.trim() === 'Loan Repayment').reduce((s,t)=>s+parseFloat(t.amount), 0);
+      const currentBalanceSum = loans.reduce((s,l)=>s+parseFloat(l.balance), 0);
+      
+      document.getElementById('rep-sav').innerText = totalSaved.toLocaleString();
+      document.getElementById('rep-loan').innerText = loansOut.toLocaleString();
+      document.getElementById('rep-int').innerText = Math.max(0, (currentBalanceSum + repaidSoFar) - loans.reduce((s,l)=>s+parseFloat(l.principal),0)).toLocaleString();
+      document.getElementById('rep-bal').innerText = (totalSaved + repaidSoFar - loansOut).toLocaleString();
+    }
+
+    function updateHeaderAvatar() {
+      const ha = document.getElementById('header-avatar');
+      const hl = document.getElementById('header-logo-img');
+      if (state.user) {
+        ha.style.display = 'flex';
+        hl.style.display = 'none';
+        if (state.user.avatar) {
+          ha.style.backgroundImage = `url(${state.user.avatar})`;
+          ha.innerText = '';
+        } else {
+          ha.style.backgroundImage = '';
+          ha.innerText = (state.user.username || state.user.name).substring(0,2).toUpperCase();
+        }
+      }
+    }
+
+    function setupProfileView() {
+      document.getElementById('prof-display-name').innerText = state.user.username || state.user.name;
+      document.getElementById('prof-username').value = state.user.username || '';
+      const av = document.getElementById('profile-avatar-large');
+      if(state.user.avatar) { av.style.backgroundImage = `url(${state.user.avatar})`; av.innerText = ''; } 
+      else { av.style.backgroundImage = ''; av.innerText = (state.user.username || state.user.name).substring(0,2).toUpperCase(); }
+      
+      // Sync Bio Toggle Setting
+      if (localStorage.getItem('biometric_enabled') === 'true') {
+        document.getElementById('bio-toggle').classList.add('active');
+      } else {
+        document.getElementById('bio-toggle').classList.remove('active');
+      }
+    }
+
+    // FIXED AVATAR UPLOAD: Further downscaled to 80px and 0.5 quality to ensure fit in Sheets
+    function handleAvatarUpload(event) {
+      const file = event.target.files[0];
+      if(!file) return;
+      
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const img = new Image();
+        img.onload = async function() {
+          const canvas = document.createElement('canvas');
+          const MAX_WIDTH = 80; 
+          const scaleSize = MAX_WIDTH / img.width;
+          canvas.width = MAX_WIDTH;
+          canvas.height = img.height * scaleSize;
+          
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+          
+          const base64 = canvas.toDataURL('image/jpeg', 0.5); 
+          
+          document.getElementById('profile-avatar-large').style.backgroundImage = `url(${base64})`;
+          document.getElementById('profile-avatar-large').innerText = '';
+          
+          state.user.avatar = base64;
+          updateHeaderAvatar();
+          
+          showToast("Saving profile picture...", false);
+          
+          try {
+            const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify({action: 'updateProfile', email: state.user.email, avatarBase64: base64}) }).then(r=>r.json());
+            if(res.success) showToast("Profile picture updated successfully!", false);
+            else showToast("Failed to save picture to server");
+          } catch(err) {
+            showToast("Network error uploading picture.");
+          }
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    async function updateProfileSettings() {
+      const username = document.getElementById('prof-username').value;
+      const pin = document.getElementById('prof-pin').value;
+      const payload = { action: 'updateProfile', email: state.user.email, newUsername: username };
+      if (pin.length === 4) payload.newPinHash = await hashPIN(pin);
+      
+      const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) }).then(r=>r.json());
+      if(res.success) { showToast("Profile Updated!", false); state.user.username = username; setupProfileView(); document.getElementById('prof-pin').value = ''; }
+      else { showToast(res.message); }
+    }
+
+    function startChatPolling() {
+      if(chatInterval) clearInterval(chatInterval);
+      chatInterval = setInterval(async () => {
+        const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify({action: 'pollChat'}) }).then(r=>r.json());
+        if(res.success && res.messages.length > state.data.messages.length) {
+          state.data.messages = res.messages;
+          if(document.getElementById('view-chat').classList.contains('active')) renderChat(true);
+          else updateChatBadge();
+        }
+      }, 5000);
+    }
+
+    function updateChatBadge() {
+      const lastRead = parseInt(localStorage.getItem('chama_last_read') || '0');
+      const unread = state.data.messages.filter(m => new Date(m.timestamp).getTime() > lastRead).length;
+      const badge = document.getElementById('chat-badge');
+      if(unread > 0) { badge.style.display = 'block'; badge.innerText = unread; } else badge.style.display = 'none';
+    }
+
+    function renderChat(markRead = false) {
+      if(markRead) {
+        localStorage.setItem('chama_last_read', Date.now().toString());
+        document.getElementById('chat-badge').style.display = 'none';
+      }
+      const chat = document.getElementById('chat-messages');
+      chat.innerHTML = state.data.messages.map(m => {
+        const isMe = m.sender === state.user.email;
+        const u = state.data.members.find(x => x.email === m.sender);
+        const name = isMe ? 'Me' : formatName(u ? (u.username||u.name) : m.sender);
+        return `
+        <div style="margin-bottom: 12px; display: flex; flex-direction: column; align-items: ${isMe ? 'flex-end' : 'flex-start'}">
+          <div style="font-size: 0.7rem; color: var(--text-muted); margin-bottom: 2px; font-weight: 700;">${name}</div>
+          <div style="padding: 10px 14px; border-radius: 16px; background: ${isMe ? 'var(--primary)' : 'var(--card)'}; color: ${isMe ? 'white' : 'var(--primary)'}; font-weight: 600; font-size: 0.9rem; border: 1px solid var(--border); max-width: 85%;">
+            ${m.msg}
+          </div>
+        </div>`;
+      }).join('');
+      chat.scrollTop = chat.scrollHeight;
+    }
+
+    async function sendMessage() {
+      const input = document.getElementById('chat-input');
+      if(!input.value.trim()) return;
+      const msg = input.value.trim(); input.value = '';
+      state.data.messages.push({ sender: state.user.email, msg: msg, timestamp: new Date().toISOString() });
+      renderChat(true);
+      await fetch(API_URL, { method: 'POST', body: JSON.stringify({action: 'addMessage', sender: state.user.email, recipient: 'Group', msg}) });
+    }
+
+    function parseMPesa() {
+      const txt = document.getElementById('mpesa-paste').value;
+      const code = txt.match(/M-Pesa Ref\s+([A-Z0-9]+)/i) || txt.match(/([A-Z0-9]{10})\s+Confirmed/i);
+      const amt = txt.match(/(?:KES|Ksh)\.?\s*([\d,.]+)/i);
+      const name = txt.match(/from\s+(.*?)\s+on/i);
+      
+      if(code) document.getElementById('entry-code').value = code[1];
+      if(amt) document.getElementById('entry-amount').value = amt[1].replace(/,/g, '');
+      
+      const sel = document.getElementById('entry-member');
+      sel.innerHTML = state.data.members.map(m => `<option value="${m.email}">${m.name} (${m.username || ''})</option>`).join('');
+      
+      if(name) {
+        const nPart = name[1].trim().toLowerCase();
+        for (let i=0; i<sel.options.length; i++) { if (sel.options[i].text.toLowerCase().includes(nPart.split(' ')[0])) { sel.selectedIndex = i; break; } }
+      }
+    }
+
+    // --- ADDED ADMIN CAMERA OCR LOGIC ---
+    async function handleMpesaOCR(event) {
+      const file = event.target.files[0];
+      if(!file) return;
+      
+      showToast("Scanning receipt... Please wait.", false);
+      const textSpan = document.getElementById('admin-btn-text');
+      const btn = document.getElementById('btn-admin-submit');
+      
+      btn.disabled = true;
+      textSpan.innerText = 'Scanning...';
+      
+      try {
+        const { data: { text } } = await Tesseract.recognize(file, 'eng');
+        document.getElementById('mpesa-paste').value = text;
+        parseMPesa(); // Extract to fields
+        showToast("Scan complete!", false);
+      } catch(e) {
+        showToast("Failed to read text from image.");
+      }
+      
+      btn.disabled = false;
+      textSpan.innerText = 'Record Transaction';
+    }
+
+    async function submitTransaction() {
+      const email = document.getElementById('entry-member').value;
+      const amount = document.getElementById('entry-amount').value;
+      const code = document.getElementById('entry-code').value;
+      const type = document.getElementById('entry-type').value;
+      
+      if(!email || !amount) return showToast('Fill required fields');
+      
+      const btn = document.getElementById('btn-admin-submit');
+      const textSpan = document.getElementById('admin-btn-text');
+      const spinner = document.getElementById('admin-spinner');
+      
+      btn.disabled = true;
+      textSpan.innerText = 'Recording...';
+      spinner.style.display = 'inline-block';
+      
+      try {
+        const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify({action: 'addTransaction', email, amount, mpesaCode: code, type}) }).then(r=>r.json());
+        if(res.success) { 
+          showToast(`Transaction Recorded: ${type} of KES ${amount}`, false); 
+          document.getElementById('mpesa-paste').value = ''; 
+          document.getElementById('entry-amount').value = '';
+          document.getElementById('entry-code').value = '';
+          await forceSync(); 
+        } else {
+          showToast('Failed to record transaction');
+        }
+      } catch(e) {
+        showToast("Network error. Try again.");
+      }
+      
+      btn.disabled = false;
+      textSpan.innerText = 'Record Transaction';
+      spinner.style.display = 'none';
+    }
+  </script>
+</body>
+</html>
