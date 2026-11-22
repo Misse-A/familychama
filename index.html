@@ -852,7 +852,7 @@
       
       if (totalSaved > 0) {
         paidUntil = new Date(startDate.getTime() + (daysCovered * 24 * 60 * 60 * 1000));
-        document.getElementById('home-paid-until').innerText = 'NeNext deposit: ' + paidUntil.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+        document.getElementById('home-paid-until').innerText = 'Next deposit: ' + paidUntil.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
       } else {
         document.getElementById('home-paid-until').innerText = 'Starts Dec 1, 2026';
       }
@@ -867,7 +867,7 @@
         alertBanner.style.color = 'var(--text-muted)';
       } else if (today > paidUntil) {
         const daysLate = Math.floor((today - paidUntil) / (1000 * 60 * 60 * 24));
-        alertBanner.innerText = `⚠️ You are behind on shares by ${daysLate} day(s).`;
+        alertBanner.innerText = `You are behind on shares by ${daysLate} day(s).`;
         alertBanner.style.color = 'var(--error)';
       } else {
         const posMsgs = [
