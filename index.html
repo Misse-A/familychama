@@ -32,13 +32,14 @@
       --border: #d1d8dc;
       --text: #11181a;
       --text-muted: #6b7a7e;
-      --success: #2E7D32;
+      --success: #0f5560;
       --error: #C62828;
     }
     [data-theme="dark"] {
       --main-bg: #141b1d; --primary: #278191; --accent: #ff856e;
       --surface: var(--main-bg); --card: #1e2629; --border: #3b494d;
       --text: #e8ecef; --text-muted: #8b9a9d;
+      --success: #e8ecef;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
@@ -54,7 +55,6 @@
     header { display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; background: var(--surface); position: sticky; top: 0; z-index: 90; }
     .header-left { display: flex; align-items: center; gap: 12px; }
     
-    /* White Backgrounds for Logos */
     .header-logo { height: 36px; width: auto; cursor: pointer; background-color: white; border-radius: 8px; padding: 4px; }
     .auth-logo { height: 70px; margin-bottom: 30px; background-color: white; border-radius: 12px; padding: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
     
@@ -96,7 +96,6 @@
     .card-title { font-weight: 800; font-size: 0.95rem; margin-bottom: 16px; color: var(--primary); display: flex; justify-content: space-between; align-items: center; }
     .link-text { font-size: 0.85rem; color: var(--accent); font-weight: 700; cursor: pointer; }
     
-    /* Forced Text Wrapping for tables */
     .data-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; table-layout: fixed; }
     .data-table td, .data-table th { padding: 12px 0; border-bottom: 1px solid var(--border); word-wrap: break-word; overflow-wrap: break-word; }
     .data-table tr:last-child td { border-bottom: none; }
@@ -146,7 +145,6 @@
         <span class="spinner" id="login-spinner"></span> <span id="login-text">Login</span>
       </button>
       
-      <!-- BIOMETRIC LOGIN BUTTON -->
       <button class="btn btn-outline" id="btn-bio-login" style="display:none; margin-top: 12px;" onclick="bioLogin()">
         <i class="ph-fill ph-fingerprint" style="margin-right:4px;"></i> Biometric Login
       </button>
@@ -154,7 +152,6 @@
       <p style="margin-top: 16px; font-size: 0.9rem; color: var(--primary); font-weight: 600; cursor: pointer;" onclick="toggleOTP()">First time setup / Forgot PIN?</p>
     </div>
 
-    <!-- OTP SETUP FORM -->
     <div id="otp-form" class="auth-box" style="display: none;">
       <h2 style="color: var(--primary); margin-bottom: 24px; font-weight: 800;">Setup Account</h2>
       <input type="email" id="otp-email" placeholder="Registered Email Address">
@@ -191,7 +188,7 @@
     <div class="sidebar-overlay" onclick="toggleSidebar(false)"></div>
     <div class="sidebar" id="sidebar">
       <div style="text-align: right; margin-bottom: 20px;"><i class="ph ph-x" style="font-size: 1.5rem; color: var(--primary); cursor: pointer;" onclick="toggleSidebar(false)"></i></div>
-      <div class="side-nav-item" onclick="navigate('home'); toggleSidebar(false);"><i class="ph ph-house"></i> Overview (Home)</div>
+      <div class="side-nav-item" onclick="navigate('home'); toggleSidebar(false);"><i class="ph ph-house"></i> Overview </div>
       <div class="side-nav-item" onclick="navigate('transactions'); toggleSidebar(false);"><i class="ph ph-arrows-left-right"></i> Transactions</div>
       <div class="side-nav-item" onclick="navigate('reports'); toggleSidebar(false);"><i class="ph ph-presentation-chart"></i> Reports & Data</div>
       <div class="side-nav-item" onclick="navigate('rules'); toggleSidebar(false);"><i class="ph ph-book-open-text"></i> Group Rules</div>
@@ -213,6 +210,7 @@
 
     <div id="view-home" class="view">
       <div class="greeting">
+        <!-- DYNAMIC GREETING & ALERTS -->
         <h1 id="greeting-title">Good to see you</h1>
         <p id="alert-banner">Doing great! Keep saving.</p>
       </div>
@@ -239,10 +237,12 @@
         </div>
         <div style="height: 1px; background: var(--border); margin: 16px -20px;"></div>
         <div style="display: flex; justify-content: space-between; align-items: center;">
-          <div style="color: var(--success); font-weight: 700; font-size: 0.85rem;">Loan: KES <span id="home-loan"><div class="skeleton-box" style="width:40px; height:14px; transform:translateY(2px)"></div></span></div>
-          <div style="font-weight: 700; color: var(--primary); font-size: 0.85rem;" id="home-paid-until">
+          
+            <div style="font-weight: 700; color: var(--primary); font-size: 0.85rem;" id="home-paid-until">
             <div class="skeleton-box" style="width:80px; height:14px; transform:translateY(2px)"></div>
           </div>
+            <div style="color: var(--success); font-weight: 700; font-size: 0.85rem;">Loan Bal: KES <span id="home-loan"><div class="skeleton-box" style="width:40px; height:14px; transform:translateY(2px)"></div></span></div>
+        
         </div>
       </div>
 
@@ -266,6 +266,7 @@
       </div>
     </div>
 
+    <!-- TRANSACTIONS VIEW -->
     <div id="view-transactions" class="view">
       <div class="greeting">
         <h1>Transactions</h1>
@@ -294,6 +295,7 @@
       </div>
     </div>
 
+    <!-- REPORTS VIEW -->
     <div id="view-reports" class="view">
       <div class="greeting">
         <h1>Group Reports</h1>
@@ -369,6 +371,8 @@
         <p>2. Savings run from Dec 1, 2026 to Dec 1, 2027.</p>
         <p>3. Loans are immediately charged 10%.</p>
         <p>4. Remaining loans compound 10% every Monday.</p>
+        <p>5. Payment is done via Mpesa/Bank Deposit.</p>
+        <p>6. all transaction and bank charges will be covered by the member.</p>
       </div>
     </div>
 
@@ -425,12 +429,12 @@
 
   <script>
     // --- APP CONFIG ---
+    // YOUR LIVE API URL 
     const API_URL = "https://script.google.com/macros/s/AKfycbzQfDzCPhTSFQbinHrJHnMW75jf_WfQMXzybNQlPUjTsdvB92tLrz0iulKH5w1vfQ5JgA/exec"; 
     
     let state = { user: null, data: { members: [], transactions: [], loans: [], messages: [] }, adminFilter: 'mine', isLoaded: false };
     let chatInterval = null;
 
-    // --- PWA INSTALLATION PROMPT ---
     let deferredPrompt;
     window.addEventListener('beforeinstallprompt', (e) => {
       e.preventDefault();
@@ -447,7 +451,6 @@
       }
     });
 
-    // --- RESTORE SESSION ON REFRESH ---
     window.addEventListener('DOMContentLoaded', () => {
       const savedUser = localStorage.getItem('chama_user');
       if (savedUser) {
@@ -592,7 +595,7 @@
           
           window.currentPinHash = pinHash;
           localStorage.setItem('saved_email', identifier);
-          localStorage.setItem('chama_user', JSON.stringify(state.user)); // Save session
+          localStorage.setItem('chama_user', JSON.stringify(state.user)); 
           
           updateHeaderAvatar(); 
           
@@ -662,7 +665,7 @@
               user: { id: new Uint8Array(16), name: state.user.email, displayName: state.user.username },
               pubKeyCredParams: [{type: "public-key", alg: -7}],
               authenticatorSelection: { 
-                authenticatorAttachment: "platform", // Forces local device scanner (Android/iOS)
+                authenticatorAttachment: "platform", 
                 userVerification: "required" 
               },
               timeout: 60000
@@ -688,7 +691,7 @@
       state.user = null;
       state.isLoaded = false;
       
-      localStorage.removeItem('chama_user'); // Clear session
+      localStorage.removeItem('chama_user'); 
       
       document.getElementById('auth').style.display = 'flex';
       document.getElementById('app').style.display = 'none';
@@ -818,7 +821,22 @@
       const txs = getFilteredTxs();
       const totalSaved = txs.filter(t => t.type === 'Shares').reduce((s, t) => s + parseFloat(t.amount), 0);
       
-      document.getElementById('greeting-title').innerText = `Good to see you, ${formatName(state.user.username || state.user.name)}`;
+      // Dynamic Randomized Greeting
+      const displayName = formatName(state.user.username || state.user.name);
+      const hour = new Date().getHours();
+      let timeOfDay = "evening";
+      if (hour < 12) timeOfDay = "morning";
+      else if (hour < 18) timeOfDay = "afternoon";
+
+      const greetings = [
+        `Vipi, ${displayName}?`,
+        `Good ${timeOfDay}, ${displayName}`,
+        `Good to see you, ${displayName}`,
+        `Welcome back, ${displayName}`,
+        `Karibu, ${displayName}!`
+      ];
+      document.getElementById('greeting-title').innerText = greetings[Math.floor(Math.random() * greetings.length)];
+      
       document.getElementById('home-saved').innerText = totalSaved.toLocaleString();
       
       const pct = Math.min((totalSaved / 36600) * 100, 100);
@@ -829,12 +847,39 @@
       document.getElementById('home-loan').innerText = myLoan ? parseFloat(myLoan.balance).toLocaleString() : '0';
 
       const daysCovered = Math.floor(totalSaved / 100);
-      if (totalSaved === 0) {
-        document.getElementById('home-paid-until').innerText = 'Starts Dec 1, 2026';
+      const startDate = new Date('2026-12-01T00:00:00');
+      let paidUntil = startDate;
+      
+      if (totalSaved > 0) {
+        paidUntil = new Date(startDate.getTime() + (daysCovered * 24 * 60 * 60 * 1000));
+        document.getElementById('home-paid-until').innerText = 'NeNext deposit: ' + paidUntil.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
       } else {
-        const startDate = new Date('2026-12-01T00:00:00');
-        const paidUntil = new Date(startDate.getTime() + (daysCovered * 24 * 60 * 60 * 1000));
-        document.getElementById('home-paid-until').innerText = 'Paid til ' + paidUntil.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+        document.getElementById('home-paid-until').innerText = 'Starts Dec 1, 2026';
+      }
+
+      // Dynamic Randomized Alerts based ONLY on late shares
+      const alertBanner = document.getElementById('alert-banner');
+      const today = new Date();
+      today.setHours(0,0,0,0);
+      
+      if (totalSaved === 0 && today < startDate) {
+        alertBanner.innerText = "Welcome! Savings start on Dec 1, 2026.";
+        alertBanner.style.color = 'var(--text-muted)';
+      } else if (today > paidUntil) {
+        const daysLate = Math.floor((today - paidUntil) / (1000 * 60 * 60 * 24));
+        alertBanner.innerText = `⚠️ You are behind on shares by ${daysLate} day(s).`;
+        alertBanner.style.color = 'var(--error)';
+      } else {
+        const posMsgs = [
+          "Today is going to be a great day!",
+          "Doing great! Keep saving.",
+          "Habit locked in. You've got this",
+          "On track and looking good.",
+          "Consistency is key. Great job!",
+          "Money grows on the tree of persistence."
+        ];
+        alertBanner.innerText = posMsgs[Math.floor(Math.random() * posMsgs.length)];
+        alertBanner.style.color = 'var(--success)';
       }
 
       const tbody = document.querySelector('#home-tx-table tbody');
