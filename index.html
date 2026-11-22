@@ -3,9 +3,19 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  
+  <!-- SEO & Social Link Preview Tags -->
   <title>Family Chama</title>
-  <link rel="icon" type="image/png" href="https://misse-a.github.io/kesflow/logoicon.png">
+  <meta name="description" content="Family Chama Savings & Loan Platform. Track group contributions, loans, and financials securely.">
+  <meta property="og:title" content="Family Chama">
+  <meta property="og:description" content="Family Chama Savings & Loan Platform. Track group contributions, loans, and financials securely.">
+  <meta property="og:image" content="https://misse-a.github.io/familychama/chamalogoicon.png">
+  <meta property="og:type" content="website">
+  
+  <link rel="icon" type="image/png" href="https://misse-a.github.io/familychama/chamalogoicon.png">
+  <link rel="apple-touch-icon" href="https://misse-a.github.io/familychama/chamalogoicon.png">
   <link rel="manifest" href="manifest.json">
+  
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
   <script src="https://unpkg.com/@phosphor-icons/web"></script>
@@ -114,13 +124,16 @@
     .toast-content { display: flex; align-items: center; gap: 10px; }
     .toast-content i { font-size: 1.2rem; }
     .toast-close { background: rgba(0,0,0,0.2); border: none; border-radius: 50%; color: white; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+
+    /* Custom Install Banner */
+    #install-banner { display: none; position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 400px; background: var(--card); border: 2px solid var(--primary); padding: 12px 16px; border-radius: 16px; z-index: 1000; box-shadow: 0 8px 24px rgba(0,0,0,0.15); align-items: center; justify-content: space-between; pointer-events: auto; }
   </style>
 </head>
 <body>
 
   <!-- AUTH SCREEN -->
   <div id="auth">
-    <img src="https://misse-a.github.io/kesflow/kesflow-logo.svg" alt="Logo" style="height: 60px; margin-bottom: 30px;">
+    <img src="https://misse-a.github.io/familychama/chamalogoii.svg" alt="Logo" style="height: 60px; margin-bottom: 30px;">
     
     <div id="login-form" class="auth-box">
       <h2 style="color: var(--primary); margin-bottom: 24px; font-weight: 800;">Welcome Back</h2>
@@ -161,7 +174,7 @@
       <div class="header-left">
         <i class="ph ph-list" style="font-size: 1.8rem; color: var(--primary); cursor: pointer;" onclick="toggleSidebar(true)"></i>
         <div id="header-avatar" class="avatar" style="display:none; cursor:pointer; width: 34px; height: 34px;" onclick="navigate('profile')"></div>
-        <img src="https://misse-a.github.io/kesflow/kesflow-logo.svg" alt="Logo" class="header-logo" id="header-logo-img" onclick="navigate('home')">
+        <img src="https://misse-a.github.io/familychama/chamalogoii.svg" alt="Logo" class="header-logo" id="header-logo-img" onclick="navigate('home')">
         <span class="header-title" onclick="navigate('home')" style="cursor:pointer;">Family Chama</span>
       </div>
       <div class="header-actions">
@@ -250,6 +263,7 @@
       </div>
     </div>
 
+    <!-- 2. TRANSACTIONS VIEW -->
     <div id="view-transactions" class="view">
       <div class="greeting">
         <h1>Transactions</h1>
@@ -265,15 +279,20 @@
       </div>
       
       <div class="card">
-        <select id="report-filter" onchange="renderTransactions()">
-          <option value="All">All Transactions</option>
-          <option value="Shares">Contributions</option>
-          <option value="Loan Repayment">Loan Repayments</option>
-        </select>
+        <div style="display: flex; gap: 8px; margin-bottom: 16px;">
+          <select id="report-filter" onchange="renderTransactions()" style="margin-bottom: 0; flex: 1;">
+            <option value="All">All Types</option>
+            <option value="Shares">Contributions</option>
+            <option value="Loan Repayment">Loan Repayments</option>
+            <option value="Loan Taken">Loans Taken</option>
+          </select>
+          <input type="month" id="month-filter" onchange="renderTransactions()" style="margin-bottom: 0; flex: 1;">
+        </div>
         <table class="data-table" id="tx-full-table"><tbody></tbody></table>
       </div>
     </div>
 
+    <!-- 3. REPORTS VIEW -->
     <div id="view-reports" class="view">
       <div class="greeting">
         <h1>Group Reports</h1>
@@ -288,6 +307,7 @@
         <table class="data-table">
           <tr><td class="td-title">Total Group Savings</td><td class="td-amount">KES <span id="rep-sav">0</span></td></tr>
           <tr><td class="td-title">Total Loans Given Out</td><td class="td-amount" style="color: var(--accent);">KES <span id="rep-loan">0</span></td></tr>
+          <tr><td class="td-title">Total Loans Repaid</td><td class="td-amount" style="color: var(--primary);">KES <span id="rep-repaid">0</span></td></tr>
           <tr><td class="td-title">Total Interest Generated</td><td class="td-amount">KES <span id="rep-int">0</span></td></tr>
           <tr><td class="td-title">Bank/Cash Balance</td><td class="td-amount" style="color: var(--success);">KES <span id="rep-bal">0</span></td></tr>
         </table>
@@ -308,13 +328,12 @@
     <div id="view-profile" class="view">
       <div class="greeting"><h1>Profile</h1></div>
       
-      <!-- FIXED AVATAR UPLOAD -->
-      <div class="avatar-large avatar" id="profile-avatar-large" style="position: relative; overflow: hidden;">
-        <div style="position: absolute; bottom: -2px; right: 0; background: var(--accent); color: white; width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; border: 3px solid var(--card); pointer-events: none; z-index: 10;">
+      <div style="position:relative; width: 110px; height: 110px; margin: 0 auto 20px auto;">
+        <div class="avatar-large avatar" id="profile-avatar-large" style="width: 100%; height: 100%; margin: 0;"></div>
+        <div style="position: absolute; bottom: -5px; right: -5px; width: 36px; height: 36px; background: var(--accent); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 3px solid var(--card); z-index: 10; overflow: hidden;">
           <i class="ph-fill ph-camera"></i>
+          <input type="file" accept="image/*" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer;" onchange="handleAvatarUpload(event)">
         </div>
-        <!-- Transparent input entirely covers the avatar ensuring click works everywhere -->
-        <input type="file" id="avatar-upload" accept="image/*" style="position: absolute; width: 100%; height: 100%; top: 0; left: 0; opacity: 0; cursor: pointer; z-index: 20;" onchange="handleAvatarUpload(event)">
       </div>
       
       <div style="text-align: center; margin: 20px 0 30px 0;">
@@ -356,11 +375,10 @@
       <div class="greeting"><h1>Data Entry</h1></div>
       <div class="card">
         
-        <!-- OCR CAMERA UI ADDED -->
         <div style="display: flex; gap: 8px; margin-bottom: 16px;">
           <textarea id="mpesa-paste" rows="3" placeholder="Paste M-Pesa SMS here..." style="margin:0; flex:1;" oninput="parseMPesa()"></textarea>
           
-          <div style="position:relative; width:70px; background:var(--surface); border:1px solid var(--border); border-radius:12px; display:flex; flex-direction:column; align-items:center; justify-content:center; color:var(--primary);">
+          <div style="position:relative; width:70px; background:var(--surface); border:1px solid var(--border); border-radius:12px; display:flex; flex-direction:column; align-items:center; justify-content:center; color:var(--primary); overflow:hidden;">
             <i class="ph-fill ph-camera" style="font-size:1.5rem;"></i>
             <span style="font-size:0.6rem; font-weight:800; margin-top:4px;">SCAN</span>
             <input type="file" accept="image/*" capture="environment" style="position:absolute; width:100%; height:100%; top:0; left:0; opacity:0; cursor:pointer;" onchange="handleMpesaOCR(event)">
@@ -386,6 +404,21 @@
       </div>
       <div class="nav-item" id="nav-profile" onclick="navigate('profile')"><i class="ph ph-user" id="icon-profile"></i><span>Profile</span></div>
     </nav>
+    
+    <!-- PWA Install Banner -->
+    <div id="install-banner">
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <img src="https://misse-a.github.io/familychama/chamalogoicon.png" style="width: 32px; height: 32px; border-radius: 8px;">
+        <div style="display: flex; flex-direction: column;">
+          <span style="font-weight: 800; font-size: 0.95rem; color: var(--primary);">Install App</span>
+          <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600;">Add Chama to your home screen</span>
+        </div>
+      </div>
+      <div style="display: flex; gap: 8px; align-items: center;">
+        <button id="btn-install" style="background: var(--accent); color: white; border: none; padding: 6px 14px; border-radius: 8px; font-weight: 700; cursor: pointer;">Install</button>
+        <i class="ph ph-x" style="font-size: 1.2rem; color: var(--text-muted); cursor: pointer;" onclick="document.getElementById('install-banner').style.display='none'"></i>
+      </div>
+    </div>
   </div>
 
   <script>
@@ -395,7 +428,23 @@
     let state = { user: null, data: { members: [], transactions: [], loans: [], messages: [] }, adminFilter: 'mine', isLoaded: false };
     let chatInterval = null;
 
-    // --- INITIALIZE BIO BUTTON ---
+    // --- PWA INSTALLATION PROMPT ---
+    let deferredPrompt;
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      document.getElementById('install-banner').style.display = 'flex';
+    });
+
+    document.getElementById('btn-install').addEventListener('click', async () => {
+      document.getElementById('install-banner').style.display = 'none';
+      if (deferredPrompt) {
+        deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        deferredPrompt = null;
+      }
+    });
+
     window.addEventListener('DOMContentLoaded', () => {
       if (localStorage.getItem('biometric_enabled') === 'true' && localStorage.getItem('saved_email')) {
         document.getElementById('btn-bio-login').style.display = 'inline-block';
@@ -516,7 +565,6 @@
         if(res.success) {
           state.user = res.user;
           
-          // Securely stage data for biometrics locally
           window.currentPinHash = pinHash;
           localStorage.setItem('saved_email', identifier);
           
@@ -539,14 +587,12 @@
         } else showToast(res.message);
       } catch(e) { 
         showToast("Network Error: Verify API URL and connection."); 
-        console.error(e);
       }
       
       document.getElementById('login-text').innerText = 'Login';
       document.getElementById('login-spinner').style.display = 'none';
     }
 
-    // --- BIOMETRICS LOGIN FLOW ---
     async function bioLogin() {
       try {
         if (!window.PublicKeyCredential) return showToast("Biometrics not supported here");
@@ -778,9 +824,25 @@
 
     function renderTransactions() {
       let txs = getFilteredTxs();
-      const filter = document.getElementById('report-filter').value;
-      if (filter !== 'All') txs = txs.filter(t => t.type === filter);
-      document.querySelector('#tx-full-table tbody').innerHTML = txs.map(generateTxHTML).join('');
+      
+      const typeFilter = document.getElementById('report-filter').value;
+      if (typeFilter !== 'All') txs = txs.filter(t => t.type.trim() === typeFilter);
+      
+      const monthFilter = document.getElementById('month-filter').value;
+      if (monthFilter) {
+        txs = txs.filter(t => {
+          const txDate = new Date(t.date);
+          const txMonth = `${txDate.getFullYear()}-${String(txDate.getMonth() + 1).padStart(2, '0')}`;
+          return txMonth === monthFilter;
+        });
+      }
+
+      const tbody = document.querySelector('#tx-full-table tbody');
+      if (txs.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="3" style="text-align:center; padding: 20px; color:var(--text-muted);">No transactions found</td></tr>';
+      } else {
+        tbody.innerHTML = txs.map(generateTxHTML).join('');
+      }
     }
 
     function executeSearch() {
@@ -801,6 +863,7 @@
       
       document.getElementById('rep-sav').innerText = totalSaved.toLocaleString();
       document.getElementById('rep-loan').innerText = loansOut.toLocaleString();
+      document.getElementById('rep-repaid').innerText = repaidSoFar.toLocaleString();
       document.getElementById('rep-int').innerText = Math.max(0, (currentBalanceSum + repaidSoFar) - loans.reduce((s,l)=>s+parseFloat(l.principal),0)).toLocaleString();
       document.getElementById('rep-bal').innerText = (totalSaved + repaidSoFar - loansOut).toLocaleString();
     }
@@ -828,7 +891,6 @@
       if(state.user.avatar) { av.style.backgroundImage = `url(${state.user.avatar})`; av.innerText = ''; } 
       else { av.style.backgroundImage = ''; av.innerText = (state.user.username || state.user.name).substring(0,2).toUpperCase(); }
       
-      // Sync Bio Toggle Setting
       if (localStorage.getItem('biometric_enabled') === 'true') {
         document.getElementById('bio-toggle').classList.add('active');
       } else {
@@ -836,7 +898,6 @@
       }
     }
 
-    // FIXED AVATAR UPLOAD: Further downscaled to 80px and 0.5 quality to ensure fit in Sheets
     function handleAvatarUpload(event) {
       const file = event.target.files[0];
       if(!file) return;
@@ -939,23 +1000,59 @@
 
     function parseMPesa() {
       const txt = document.getElementById('mpesa-paste').value;
-      const code = txt.match(/M-Pesa Ref\s+([A-Z0-9]+)/i) || txt.match(/([A-Z0-9]{10})\s+Confirmed/i);
-      const amt = txt.match(/(?:KES|Ksh)\.?\s*([\d,.]+)/i);
-      const name = txt.match(/from\s+(.*?)\s+on/i);
+      if (!txt.trim()) return;
+
+      const codeMatch = txt.match(/M-Pesa Ref[,.]?\s*([A-Z0-9]+)/i);
+      if (codeMatch) document.getElementById('entry-code').value = codeMatch[1];
+
+      const amtMatch = txt.match(/KES\.?\s*([\d,.]+)/i);
+      if (amtMatch) document.getElementById('entry-amount').value = amtMatch[1].replace(/,/g, '');
+
+      let extractedName = "";
+      const typeSelect = document.getElementById('entry-type');
       
-      if(code) document.getElementById('entry-code').value = code[1];
-      if(amt) document.getElementById('entry-amount').value = amt[1].replace(/,/g, '');
-      
-      const sel = document.getElementById('entry-member');
-      sel.innerHTML = state.data.members.map(m => `<option value="${m.email}">${m.name} (${m.username || ''})</option>`).join('');
-      
-      if(name) {
-        const nPart = name[1].trim().toLowerCase();
-        for (let i=0; i<sel.options.length; i++) { if (sel.options[i].text.toLowerCase().includes(nPart.split(' ')[0])) { sel.selectedIndex = i; break; } }
+      if (txt.toLowerCase().includes("successfully credited")) {
+        typeSelect.value = "Shares";
+        const nameMatch = txt.match(/from\s+(.*?)\s+on/i);
+        if (nameMatch) extractedName = nameMatch[1].trim().toLowerCase();
+      } 
+      else if (txt.toLowerCase().includes("successfully sent")) {
+        typeSelect.value = "Loan Taken";
+        const nameMatch = txt.match(/to\s+\d+\s+-\s+(.*?)\./i);
+        if (nameMatch) extractedName = nameMatch[1].trim().toLowerCase();
+      }
+
+      if (extractedName) {
+        const nameMap = {
+          "allan": "Allan Mise",
+          "jackline": "Jackline Nyambura",
+          "caroline": "Caroline Wangui",
+          "caroline": "Caroline Wangui",
+          "Elizabeth": "Elizabeth Wangeci"
+        };
+
+        let targetName = "";
+        for (const [key, fullName] of Object.entries(nameMap)) {
+          if (extractedName.includes(key)) {
+            targetName = fullName;
+            break;
+          }
+        }
+
+        const sel = document.getElementById('entry-member');
+        sel.innerHTML = state.data.members.map(m => `<option value="${m.email}">${m.name} (${m.username || ''})</option>`).join('');
+        
+        if (targetName) {
+          for (let i = 0; i < sel.options.length; i++) { 
+            if (sel.options[i].text.toLowerCase().includes(targetName.toLowerCase())) { 
+              sel.selectedIndex = i; 
+              break; 
+            } 
+          }
+        }
       }
     }
 
-    // --- ADDED ADMIN CAMERA OCR LOGIC ---
     async function handleMpesaOCR(event) {
       const file = event.target.files[0];
       if(!file) return;
@@ -970,7 +1067,7 @@
       try {
         const { data: { text } } = await Tesseract.recognize(file, 'eng');
         document.getElementById('mpesa-paste').value = text;
-        parseMPesa(); // Extract to fields
+        parseMPesa();
         showToast("Scan complete!", false);
       } catch(e) {
         showToast("Failed to read text from image.");
